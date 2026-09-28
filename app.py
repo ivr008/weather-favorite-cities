@@ -46,20 +46,34 @@ WMO_CODES = {
 def get_weather(city: str) -> dict | None:
     """Resolve a city name and return current weather via Open-Meteo."""
     try:
-        # 1) Geocode the city name
-        geo = requests.get(
-            "https://geocoding-api.open-meteo.com/v1/search",
-            params={"name": city, "count": 1, "language": "en", "format": "json"},
-            timeout=10,
-        ).json()
-        results = geo.get("results") or []
-        if not results:
+        # 1) Geocode the city name (retry with just the city if "City, XX" fails)
+        queries = [city]
+        if "," in city:
+            queries.append(city.split(",", 1)[0].strip())
+
+        place = None
+        for q in queries:
+            if not q:
+                continue
+            try:
+                geo = requests.get(
+                    "https://geocoding-api.open-meteo.com/v1/search",
+                    params={"name": q, "count": 1, "language": "en", "format": "json"},
+                    timeout=10,
+                ).json()
+                results = geo.get("results") or []
+                if results:
+                    place = results[0]
+                    break
+            except Exception:
+                continue
+
+        if place is None:
             return None
 
-        place = results[0]
         name = place.get("name", city)
-        country = place.get("country", "")
-        admin = place.get("admin1", "")
+        country = place.get("country") or place.get("country_code") or ""
+        admin = place.get("admin1") or ""
         lat, lon = place["latitude"], place["longitude"]
 
         # 2) Fetch current weather
@@ -140,7 +154,9 @@ if submitted:
                 continue
 
             st.subheader(f"📍 {data['name']}")
-            st.caption(f"{data['admin']}, {data['country']}".strip(", "))
+            location = ", ".join(x for x in [data["admin"], data["country"]] if x)
+            if location:
+                st.caption(location)
 
             st.metric("Temperature", f"{data['temp_f']:.0f}°F")
             st.markdown(f"**{data['description']}**")
