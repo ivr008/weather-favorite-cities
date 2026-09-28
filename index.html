@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌤️ Weather in My Favorite Cities</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f2f6;
+      --card: #ffffff;
+      --text: #262730;
+      --muted: #808495;
+      --border: #e6eaf1;
+      --primary: #ff4b4b;
+      --primary-hover: #e03e3e;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Source Sans 3", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .caption {
+      color: var(--muted);
+      font-size: 1rem;
+      margin: 0 0 1.75rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      margin: 0 0 1.25rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid #d5dae5;
+      border-radius: 0.5rem;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    button {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    button:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    /* Results */
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .weather-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow);
+      padding: 1.25rem 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .weather-card .place {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .weather-card .region {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0.15rem 0 1rem;
+    }
+
+    .metric {
+      margin-bottom: 0.75rem;
+    }
+
+    .metric .metric-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.1rem;
+    }
+
+    .metric .metric-value {
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .condition {
+      font-weight: 600;
+      margin: 0 0 1.1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: auto;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: #f8f9fb;
+      font-weight: 600;
+    }
+
+    .error {
+      color: #9b1c1c;
+      background: #fde8e8;
+      border: 1px solid #f5b5b5;
+      border-radius: 0.5rem;
+      padding: 0.9rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .spinner-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 0.25rem 0;
+    }
+
+    .spinner {
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 3px solid #d5dae5;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>🌤️ Weather in My Favorite Cities</h1>
+    <p class="caption">Type in your 4 favorite cities and get the current weather.</p>
+
+    <!-- Input form -->
+    <form id="citiesForm" class="card">
+      <h2>✏️ Your 4 favorite cities</h2>
+      <div class="grid-2">
+        <div>
+          <label for="city1">City 1</label>
+          <input type="text" id="city1" value="Guaynabo, PR" />
+        </div>
+        <div>
+          <label for="city3">City 3</label>
+          <input type="text" id="city3" value="Paris, France" />
+        </div>
+        <div>
+          <label for="city2">City 2</label>
+          <input type="text" id="city2" value="Tokyo, Japan" />
+        </div>
+        <div>
+          <label for="city4">City 4</label>
+          <input type="text" id="city4" value="Sydney, Australia" />
+        </div>
+      </div>
+      <button type="submit" id="submitBtn">Get Weather</button>
+    </form>
+
+    <!-- Loading -->
+    <div id="loading" class="card hidden">
+      <div class="spinner-row">
+        <div class="spinner"></div>
+        <span>Fetching weather…</span>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const WMO_CODES = {
+      0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+      45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle",
+      55: "Dense drizzle", 56: "Freezing drizzle (light)", 57: "Freezing drizzle (dense)",
+      61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
+      66: "Freezing rain (light)", 67: "Freezing rain (heavy)",
+      71: "Slight snowfall", 73: "Moderate snowfall", 75: "Heavy snowfall", 77: "Snow grains",
+      80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers",
+      85: "Slight snow showers", 86: "Heavy snow showers",
+      95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail",
+    };
+
+    async function getWeather(city) {
+      try {
+        // 1) Geocode the city name (retry with just the city if "City, XX" fails)
+        const queries = [city];
+        if (city.includes(",")) queries.push(city.split(",")[0].trim());
+
+        let place = null;
+        for (const q of queries) {
+          if (!q) continue;
+          try {
+            const res = await fetch(
+              "https://geocoding-api.open-meteo.com/v1/search?name=" +
+              encodeURIComponent(q) + "&count=1&language=en&format=json"
+            );
+            const geo = await res.json();
+            const results = geo.results || [];
+            if (results.length) { place = results[0]; break; }
+          } catch (e) { /* try next */ }
+        }
+
+        if (!place) return null;
+
+        const name = place.name || city;
+        const country = place.country || place.country_code || "";
+        const admin = place.admin1 || "";
+        const lat = place.latitude;
+        const lon = place.longitude;
+
+        // 2) Fetch current weather
+        const params = new URLSearchParams({
+          latitude: lat,
+          longitude: lon,
+          current: "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m",
+          temperature_unit: "fahrenheit",
+          wind_speed_unit: "mph",
+          timezone: "auto",
+        });
+        const wRes = await fetch("https://api.open-meteo.com/v1/forecast?" + params.toString());
+        const weather = await wRes.json();
+        const cur = weather.current || {};
+        const code = cur.weather_code ?? 0;
+
+        return {
+          name,
+          country,
+          admin,
+          temp_f: cur.temperature_2m,
+          feels_f: cur.apparent_temperature,
+          humidity: cur.relative_humidity_2m,
+          wind_mph: cur.wind_speed_10m,
+          description: WMO_CODES[code] || "Unknown",
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function renderCard(data) {
+      if (!data) return null;
+      const card = document.createElement("div");
+      card.className = "weather-card";
+
+      const location = [data.admin, data.country].filter(Boolean).join(", ");
+      const fmt = (v) => (v == null ? "—" : Math.round(v));
+
+      card.innerHTML = `
+        <p class="place">📍 ${escapeHtml(data.name)}</p>
+        ${location ? `<p class="region">${escapeHtml(location)}</p>` : ""}
+        <div class="metric">
+          <div class="metric-label">Temperature</div>
+          <div class="metric-value">${fmt(data.temp_f)}°F</div>
+        </div>
+        <p class="condition">${escapeHtml(data.description)}</p>
+        <table>
+          <tr><th>Feels like</th><td>${fmt(data.feels_f)}°F</td></tr>
+          <tr><th>Humidity</th><td>${fmt(data.humidity)}%</td></tr>
+          <tr><th>Wind</th><td>${fmt(data.wind_mph)} mph</td></tr>
+        </table>
+      `;
+      return card;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c]));
+    }
+
+    const form = document.getElementById("citiesForm");
+    const loading = document.getElementById("loading");
+    const resultsEl = document.getElementById("results");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const cities = ["city1", "city2", "city3", "city4"]
+        .map((id) => document.getElementById(id).value.trim())
+        .filter(Boolean);
+
+      resultsEl.innerHTML = "";
+      if (!cities.length) {
+        resultsEl.innerHTML = '<div class="error">Please enter at least one city.</div>';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      loading.classList.remove("hidden");
+      try {
+        const results = await Promise.all(cities.map(getWeather));
+        const frag = document.createDocumentFragment();
+        cities.forEach((city, i) => {
+          const card = renderCard(results[i]);
+          if (card) {
+            frag.appendChild(card);
+          } else {
+            const err = document.createElement("div");
+            err.className = "weather-card";
+            err.innerHTML = `<div class="error">Could not find weather for <b>${escapeHtml(city)}</b>.</div>`;
+            frag.appendChild(err);
+          }
+        });
+        resultsEl.appendChild(frag);
+      } finally {
+        loading.classList.add("hidden");
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
